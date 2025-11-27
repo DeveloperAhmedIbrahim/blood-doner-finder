@@ -5,8 +5,9 @@ const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
-const donorRoutes = require('./routes/donorRoutes');        // NEW
-const hospitalRoutes = require('./routes/hospitalRoutes');  // NEW
+const donorRoutes = require('./routes/donorRoutes');
+const hospitalRoutes = require('./routes/hospitalRoutes');
+const requestRoutes = require('./routes/requestRoutes');  // NEW
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,18 +18,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // NEW
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/donor', donorRoutes);          // NEW
-app.use('/api/hospital', hospitalRoutes);    // NEW
+app.use('/api/donor', donorRoutes);
+app.use('/api/hospital', hospitalRoutes);
+app.use('/api/requests', requestRoutes);  // NEW
 
 // Test route
 app.get('/', (req, res) => {
   res.json({ 
     message: '🩸 Blood Donor Finder API',
-    version: '1.0.0',
+    version: '1.3.0',
     status: 'Running'
   });
 });

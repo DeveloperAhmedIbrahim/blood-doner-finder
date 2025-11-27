@@ -106,8 +106,7 @@ const DonorDashboard = ({ navigation }) => {
 
   const badge = getVerificationBadge();
   const isProfileComplete = profileData?.profile_completed;
-  const isVerified = profileData?.is_verified === true;
-
+  const isVerified = profileData?.is_verified === 1;
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -192,8 +191,8 @@ const DonorDashboard = ({ navigation }) => {
 
           {isVerified && (
             <CustomButton
-              title="View Blood Requests"
-              onPress={() => Alert.alert('Coming Soon', 'This feature will be available in Module 3')}
+              title="View Active Blood Requests"
+              onPress={() => navigation.navigate('ActiveRequests')}
               style={[styles.actionButton, { backgroundColor: COLORS.SUCCESS }]}
             />
           )}

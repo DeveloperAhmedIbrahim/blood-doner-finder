@@ -13,6 +13,10 @@ import VerificationStatusScreen from '../screens/Donor/VerificationStatusScreen'
 import HospitalDashboard from '../screens/Hospital/HospitalDashboard';
 import PendingVerificationsScreen from '../screens/Hospital/PendingVerificationsScreen';
 import VerifyDonorScreen from '../screens/Hospital/VerifyDonorScreen';
+import PatientDashboard from '../screens/Patient/PatientDashboard';
+import CreateRequestScreen from '../screens/Patient/CreateRequestScreen';
+import MyRequestsScreen from '../screens/Patient/MyRequestsScreen';
+import ActiveRequestsScreen from '../screens/Donor/ActiveRequestsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -93,6 +97,26 @@ const AuthNavigator = () => {
           component={VerifyDonorScreen}
           options={{ title: 'Verify Donor' }}
         />
+        <Stack.Screen 
+          name="PatientDashboard" 
+          component={PatientDashboard} 
+          options={{ title: 'Patient Dashboard', headerLeft: null, gestureEnabled: false }} 
+        />
+        <Stack.Screen 
+          name="CreateRequest" 
+          component={CreateRequestScreen} 
+          options={{ title: 'Create Blood Request' }} 
+        />
+        <Stack.Screen 
+          name="MyRequests" 
+          component={MyRequestsScreen} 
+          options={{ title: 'My Requests' }} 
+        />
+        <Stack.Screen 
+          name="ActiveRequests" 
+          component={ActiveRequestsScreen} 
+          options={{ title: 'Active Requests' }} 
+        />        
       </Stack.Navigator>
     </NavigationContainer>
   );

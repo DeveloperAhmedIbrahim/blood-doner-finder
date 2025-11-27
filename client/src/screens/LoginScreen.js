@@ -67,6 +67,8 @@ const LoginScreen = ({ navigation }) => {
           dashboard = 'DonorDashboard';
         } else if(response.data.role === 'hospital') {
           dashboard = 'HospitalDashboard';
+        } else if(response.data.role === 'patient') {
+          dashboard = 'PatientDashboard';
         }
 
         Alert.alert(

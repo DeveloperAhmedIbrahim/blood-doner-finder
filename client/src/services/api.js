@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../utils/constants';
 
 
-// Axios instance banayein
+// Axios instance
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
@@ -12,7 +12,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor (har request mein token add kare)
+// Request interceptor
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('userToken');
@@ -105,10 +105,6 @@ export const donorAPI = {
   },
 };
 
-// ──────────────────────────────────────────────────────────────
-// HOSPITAL API CALLS (add this at the bottom of services/api.js)
-// ──────────────────────────────────────────────────────────────
-
 export const hospitalAPI = {
   // Get pending verifications count + list
   getPendingVerifications: async () => {
@@ -130,6 +126,61 @@ export const hospitalAPI = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Verification failed' };
+    }
+  },
+};
+
+export const requestAPI = {
+  // Create new blood request (Patient)
+  createRequest: async (requestData) => {
+    try {
+      const response = await api.post('/requests/create', requestData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to create request' };
+    }
+  },
+
+  // Get active requests (for Donor)
+  getActiveRequests: async () => {
+    try {
+      const response = await api.get('/requests/active');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch requests' };
+    }
+  },
+
+  // Get my requests (Patient)
+  getMyRequests: async () => {
+    try {
+      const response = await api.get('/requests/my-requests');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch my requests' };
+    }
+  },
+
+  // Cancel request
+  cancelRequest: async (requestId) => {
+    try {
+      const response = await api.post(`/requests/cancel/${requestId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to cancel request' };
+    }
+  },
+
+  // Respond to request (Donor)
+  respondToRequest: async (requestId, response, message = '') => {
+    try {
+      const res = await api.post(`/requests/${requestId}/respond`, {
+        response,
+        message,
+      });
+      return res.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to respond' };
     }
   },
 };

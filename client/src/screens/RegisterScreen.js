@@ -90,12 +90,14 @@ const RegisterScreen = ({ route, navigation }) => {
         await AsyncStorage.setItem('userToken', response.data.token);
         await AsyncStorage.setItem('userData', JSON.stringify(response.data));
 
-        // Role-based navigati  on
+        // Role-based navigation
         let dashboard = 'Home';
         if(response.data.role === 'donor') {
           dashboard = 'DonorDashboard';
         } else if(response.data.role === 'hospital') {
           dashboard = 'HospitalDashboard';
+        } else if(response.data.role === 'patient') {
+          dashboard = 'PatientDashboard';
         }
 
         Alert.alert(
