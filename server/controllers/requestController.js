@@ -85,7 +85,12 @@ exports.getMyRequests = async (req, res) => {
 exports.getActiveRequests = async (req, res) => {
   try {
     const requests = await Request.getActiveRequests();
-
+    // Add responses for current donor
+    for (let request of requests) {
+      const responses = await Request.getResponses(request.id);
+      const myResponse = responses.find(r => r.donor_id === req.userId);
+      request.my_response = myResponse ? myResponse.response : null;
+    }
     res.json({
       success: true,
       count: requests.length,
@@ -123,33 +128,20 @@ exports.getAllRequests = async (req, res) => {
 exports.getRequestDetails = async (req, res) => {
   try {
     const { requestId } = req.params;
-
     const request = await Request.getById(requestId);
-
     if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'Request not found',
-      });
+      return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
-    // Get responses
+    // Add my response
     const responses = await Request.getResponses(requestId);
+    const myResponse = responses.find(r => r.donor_id === req.userId);
+    request.my_response = myResponse ? myResponse.response : null;
 
-    res.json({
-      success: true,
-      data: {
-        request,
-        responses,
-        responsesCount: responses.length,
-      },
-    });
+    res.json({ success: true, data: { request } });
   } catch (error) {
     console.error('Get request details error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch request details',
-    });
+    res.status(500).json({ success: false, message: 'Failed to fetch details' });
   }
 };
 
@@ -215,6 +207,59 @@ exports.cancelRequest = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to cancel request',
+    });
+  }
+};
+
+// Respond to request (Donor) - UPDATED
+exports.respondToRequest = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { response, message } = req.body;
+
+    // Validation
+    if (!['accepted', 'rejected'].includes(response)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid response. Must be "accepted" or "rejected"',
+      });
+    }
+
+    // Get request details
+    const request = await Request.getById(requestId);
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Request not found',
+      });
+    }
+
+    // Record response
+    await Request.recordResponse(requestId, req.userId, response, message);
+
+    // If accepted, create initial chat message
+    if (response === 'accepted') {
+      const Chat = require('../models/Chat');
+      await Chat.sendMessage({
+        request_id: requestId,
+        sender_id: req.userId,
+        receiver_id: request.patient_id,
+        message: message || 'I can help! Let me know how to proceed.',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Request ${response} successfully`,
+      data: {
+        patient_id: response === 'accepted' ? request.patient_id : null,
+      },
+    });
+  } catch (error) {
+    console.error('Respond to request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to respond to request',
     });
   }
 };

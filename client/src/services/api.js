@@ -183,6 +183,61 @@ export const requestAPI = {
       throw error.response?.data || { message: 'Failed to respond' };
     }
   },
+
+// Get single request details (for donor to view before responding)
+  getRequestDetails: async (requestId) => {
+    try {
+      const response = await api.get(`/requests/${requestId}/details`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch request details' };
+    }
+  },  
+};
+
+export const chatAPI = {
+  // Send message
+  sendMessage: async (requestId, receiverId, message) => {
+    try {
+      const response = await api.post(`/chat/${requestId}/send`, {
+        receiver_id: receiverId,
+        message,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to send message' };
+    }
+  },
+
+  // Get messages
+  getMessages: async (requestId) => {
+    try {
+      const response = await api.get(`/chat/${requestId}/messages`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch messages' };
+    }
+  },
+
+  // Get chat list
+  getChatList: async () => {
+    try {
+      const response = await api.get('/chat/list');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch chats' };
+    }
+  },
+
+  // Get unread count
+  getUnreadCount: async () => {
+    try {
+      const response = await api.get('/chat/unread-count');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch unread count' };
+    }
+  },
 };
 
 export default api;

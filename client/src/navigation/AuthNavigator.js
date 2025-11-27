@@ -17,6 +17,9 @@ import PatientDashboard from '../screens/Patient/PatientDashboard';
 import CreateRequestScreen from '../screens/Patient/CreateRequestScreen';
 import MyRequestsScreen from '../screens/Patient/MyRequestsScreen';
 import ActiveRequestsScreen from '../screens/Donor/ActiveRequestsScreen';
+import ChatListScreen from '../screens/Chat/ChatListScreen';
+import ChatScreen from '../screens/Chat/ChatScreen';
+import RequestDetailsScreen from '../screens/Donor/RequestDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -116,7 +119,22 @@ const AuthNavigator = () => {
           name="ActiveRequests" 
           component={ActiveRequestsScreen} 
           options={{ title: 'Active Requests' }} 
-        />        
+        />
+        <Stack.Screen 
+          name="ChatList" 
+          component={ChatListScreen} 
+          options={{ title: 'Messages' }} 
+        />
+        <Stack.Screen 
+          name="ChatScreen" 
+          component={ChatScreen} 
+          options={{ title: 'Chat' }} 
+        />
+        <Stack.Screen 
+          name="RequestDetails" 
+          component={RequestDetailsScreen} 
+          options={{ title: 'Request Details' }} 
+        />                
       </Stack.Navigator>
     </NavigationContainer>
   );

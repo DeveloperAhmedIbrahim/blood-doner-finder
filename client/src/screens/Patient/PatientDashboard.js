@@ -13,27 +13,40 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from '../../components/CustomButton';
 import { COLORS } from '../../utils/constants';
 import { requestAPI } from '../../services/api';
+import { chatAPI } from '../../services/api';
 
 const PatientDashboard = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [myRequestsCount, setMyRequestsCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
+useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
     try {
-      const userStr = await AsyncStorage.getItem('userData');
-      if (userStr) setUserData(JSON.parse(userStr));
+      const userDataStr = await AsyncStorage.getItem('userData');
+      if (userDataStr) {
+        setUserData(JSON.parse(userDataStr));
+      }
 
-      const res = await requestAPI.getMyRequests();
-      if (res.success) {
-        setMyRequestsCount(res.count || res.data.length);
+      const [requestsRes, unreadRes] = await Promise.all([
+        requestAPI.getMyRequests(),
+        chatAPI.getUnreadCount(),
+      ]);
+
+      if (requestsRes.success) {
+        setMyRequestsCount(requestsRes.count || requestsRes.data.length);
+      }
+
+      if (unreadRes.success) {
+        setUnreadCount(unreadRes.data.unread_count);
       }
     } catch (error) {
-      console.log('Load patient data:', error.message);
+      console.error('Load data error:', error.message);
+      Alert.alert('Error', 'Failed to load data');
     }
   };
 
@@ -83,6 +96,12 @@ const PatientDashboard = ({ navigation }) => {
           onPress={() => navigation.navigate('MyRequests')}
           style={styles.secondaryBtn}
         />
+
+        <CustomButton
+          title={`Messages ${unreadCount > 0 ? `(${unreadCount})` : ''}`}
+          onPress={() => navigation.navigate('ChatList')}
+          style={[styles.secondaryBtn, { backgroundColor: COLORS.SECONDARY }]}
+        />        
 
         <CustomButton
           title="Logout"

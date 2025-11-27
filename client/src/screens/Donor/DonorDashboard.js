@@ -12,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from '../../components/CustomButton';
 import { donorAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
+import { chatAPI } from '../../services/api';
+
 
 const DonorDashboard = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
@@ -19,6 +21,7 @@ const DonorDashboard = ({ navigation }) => {
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);  
 
   useEffect(() => {
     loadData();
@@ -51,6 +54,11 @@ const DonorDashboard = ({ navigation }) => {
       if (statusRes.success) {
         setVerificationStatus(statusRes.data);
       }
+      // Get unread messages count
+      const unreadRes = await chatAPI.getUnreadCount();
+      if (unreadRes.success) {
+        setUnreadCount(unreadRes.data.unread_count);
+      }      
     } catch (error) {
       console.error('Fetch profile error:', error.message);
       Alert.alert('Error', error.message || 'Failed to load data');
@@ -191,7 +199,15 @@ const DonorDashboard = ({ navigation }) => {
 
           {isVerified && (
             <CustomButton
-              title="View Active Blood Requests"
+              title={`Messages ${unreadCount > 0 ? `(${unreadCount})` : ''}`}
+              onPress={() => navigation.navigate('ChatList')}
+              style={[styles.actionButton, { backgroundColor: COLORS.SECONDARY }]}
+            />
+          )}          
+
+          {isVerified && (
+            <CustomButton
+              title="View Blood Requests"
               onPress={() => navigation.navigate('ActiveRequests')}
               style={[styles.actionButton, { backgroundColor: COLORS.SUCCESS }]}
             />
