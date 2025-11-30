@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,9 +15,7 @@ const DonationHistoryScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchDonations();
-  }, []);
+  useFocusEffect(useCallback(() => { fetchDonations(); }, []));  
 
   const fetchDonations = async () => {
     try {

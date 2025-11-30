@@ -18,6 +18,7 @@ import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { COLORS, BLOOD_GROUPS, URGENCY_LEVELS } from '../../utils/constants';
 import { requestAPI } from '../../services/api';
+import MapView, { Marker } from 'react-native-maps';
 
 const CreateRequestScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
@@ -235,6 +236,29 @@ const CreateRequestScreen = ({ navigation }) => {
             numberOfLines={4}
           />
 
+          {location && (
+            <View style={styles.mapContainer}>
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                  }}
+                  title="Your Location"
+                  pinColor={COLORS.PRIMARY}
+                />
+              </MapView>
+            </View>
+          )}
+
           {errors.location && (
             <Text style={[styles.errorText, { marginTop: -10 }]}>
               {errors.location}
@@ -300,6 +324,9 @@ const styles = StyleSheet.create({
   // Loader screen
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 12, color: COLORS.GRAY },
+
+  mapContainer: { height: 200, borderRadius: 15, overflow: 'hidden', marginBottom: 15 },
+  map: { flex: 1 },  
 });
 
 export default CreateRequestScreen;

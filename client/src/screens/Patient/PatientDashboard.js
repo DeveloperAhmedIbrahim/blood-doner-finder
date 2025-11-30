@@ -1,149 +1,113 @@
-// src/screens/Patient/PatientDashboard.js
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  RefreshControl,
-} from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../context/AuthContext';
 import CustomButton from '../../components/CustomButton';
+import StatCard from '../../components/StatCard';
+import { requestAPI, chatAPI, notificationAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
-import { notificationAPI, requestAPI } from '../../services/api';
-import { chatAPI } from '../../services/api';
+import notificationService from '../../services/notificationService';
 
 const PatientDashboard = ({ navigation }) => {
+  const { logout } = useAuth();
   const [userData, setUserData] = useState(null);
   const [myRequestsCount, setMyRequestsCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [notificationCount, setNotificationCount] = useState(0);
 
-useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(useCallback(() => { loadData(); }, []));
+
+  useEffect(() => {
+    notificationService.startPolling();
+    
+    const unsubscribe = notificationService.subscribe((count) => {
+      setUnreadNotifications(count);
+      // Optional: Show alert
+      // notificationService.showLocalNotification('New Notification', 'You have new notifications');
+    });
+
+    return () => {
+      notificationService.stopPolling();
+      unsubscribe();
+    };
+  }, []);  
 
   const loadData = async () => {
     try {
-      const userDataStr = await AsyncStorage.getItem('userData');
-      if (userDataStr) {
-        setUserData(JSON.parse(userDataStr));
-      }
+      const userStr = await AsyncStorage.getItem('userData');
+      if (userStr) setUserData(JSON.parse(userStr));
 
-      const [requestsRes, unreadRes] = await Promise.all([
+      const [requestsRes, chatRes, notifRes] = await Promise.all([
         requestAPI.getMyRequests(),
         chatAPI.getUnreadCount(),
+        notificationAPI.getUnreadCount(),
       ]);
 
-      if (requestsRes.success) {
-        setMyRequestsCount(requestsRes.count || requestsRes.data.length);
-      }
-
-      if (unreadRes.success) {
-        setUnreadCount(unreadRes.data.unread_count);
-      }
-
-      const notifRes = await notificationAPI.getUnreadCount();
-      if (notifRes.success) {
-        setNotificationCount(notifRes.data.unread_count);
-      }
+      if (requestsRes.success) setMyRequestsCount(requestsRes.count || requestsRes.data.length);
+      if (chatRes.success) setUnreadMessages(chatRes.data.unread_count);
+      if (notifRes.success) setUnreadNotifications(notifRes.data.unread_count);
     } catch (error) {
-      console.error('Load data error:', error.message);
-      Alert.alert('Error', 'Failed to load data');
+      console.log('Load patient data:', error.message);
+    } finally {
+      setRefreshing(false);
     }
   };
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
-  };
+  const onRefresh = () => { setRefreshing(true); loadData(); };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure?', [
       { text: 'Cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          await AsyncStorage.multiRemove(['userToken', 'userData']);
-          navigation.replace('ChooseRole');
-        },
-      },
+      { text: 'Logout', style: 'destructive', onPress: () => logout() },
     ]);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        <Text style={styles.welcome}>Welcome, {userData?.name || 'Patient'}!</Text>
-        <Text style={styles.subtext}>Need blood? Create a request now</Text>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Your Requests</Text>
-          <Text style={styles.bigNumber}>{myRequestsCount}</Text>
-          <Text style={styles.cardText}>Total requests created</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>Hello,</Text>
+            <Text style={styles.name}>{userData?.name || 'Patient'}</Text>
+          </View>
+          <TouchableOpacity style={styles.notificationButton} onPress={() => navigation.navigate('Notifications')}>
+            <Text style={styles.notificationIcon}>🔔</Text>
+            {unreadNotifications > 0 && <View style={styles.badge}><Text style={styles.badgeText}>{unreadNotifications}</Text></View>}
+          </TouchableOpacity>
         </View>
 
-        <CustomButton
-          title="Create New Blood Request"
-          onPress={() => navigation.navigate('CreateRequest')}
-          style={styles.mainBtn}
-        />
+        <View style={styles.statsRow}>
+          <StatCard icon="📋" title="My Requests" value={myRequestsCount} color={COLORS.PRIMARY} onPress={() => navigation.navigate('MyRequests')} />
+          <StatCard icon="💬" title="Messages" value={unreadMessages} color={COLORS.SECONDARY} onPress={() => navigation.navigate('ChatList')} />
+        </View>
 
-        <CustomButton
-          title="View My Requests"
-          onPress={() => navigation.navigate('MyRequests')}
-          style={styles.secondaryBtn}
-        />
-
-        <CustomButton
-          title={`Messages ${unreadCount > 0 ? `(${unreadCount})` : ''}`}
-          onPress={() => navigation.navigate('ChatList')}
-          style={[styles.secondaryBtn, { backgroundColor: COLORS.SECONDARY }]}
-        />
-
-        <CustomButton
-          title={`Notifications ${notificationCount > 0 ? `(${notificationCount})` : ''}`}
-          onPress={() => navigation.navigate('Notifications')}
-          style={[styles.actionButton, { backgroundColor: COLORS.WARNING }]}
-        />
-
-        <CustomButton
-          title="Logout"
-          onPress={handleLogout}
-          style={styles.logoutBtn}
-        />
+        <View style={styles.actionsContainer}>
+          <CustomButton title="Create New Blood Request" onPress={() => navigation.navigate('CreateRequest')} style={[styles.button, { backgroundColor: COLORS.PRIMARY }]} />
+          <CustomButton title="View My Requests" onPress={() => navigation.navigate('MyRequests')} style={[styles.button, { backgroundColor: COLORS.SECONDARY }]} />
+          <CustomButton title="Messages" onPress={() => navigation.navigate('ChatList')} style={[styles.button, { backgroundColor: COLORS.SECONDARY }]} />
+          <CustomButton title="Logout" onPress={handleLogout} style={[styles.button, { backgroundColor: COLORS.GRAY }]} />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.LIGHT },
+  container: { flex: 1, backgroundColor: '#F5F7FA' },
   scrollContent: { padding: 20 },
-  welcome: { fontSize: 28, fontWeight: 'bold', color: COLORS.DARK, marginBottom: 5 },
-  subtext: { fontSize: 16, color: COLORS.GRAY, marginBottom: 30 },
-  card: {
-    backgroundColor: COLORS.WHITE,
-    padding: 25,
-    borderRadius: 15,
-    alignItems: 'center',
-    marginBottom: 30,
-    elevation: 4,
-  },
-  cardTitle: { fontSize: 16, color: COLORS.GRAY },
-  bigNumber: { fontSize: 48, fontWeight: 'bold', color: COLORS.PRIMARY, marginVertical: 10 },
-  cardText: { fontSize: 14, color: COLORS.GRAY },
-  mainBtn: { backgroundColor: COLORS.PRIMARY, marginBottom: 15 },
-  secondaryBtn: { backgroundColor: COLORS.SECONDARY, marginBottom: 15 },
-  logoutBtn: { backgroundColor: COLORS.GRAY },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
+  greeting: { fontSize: 16, color: COLORS.GRAY },
+  name: { fontSize: 28, fontWeight: 'bold', color: COLORS.DARK },
+  notificationButton: { width: 50, height: 50, borderRadius: 25, backgroundColor: COLORS.WHITE, justifyContent: 'center', alignItems: 'center', elevation: 3, position: 'relative' },
+  notificationIcon: { fontSize: 24 },
+  badge: { position: 'absolute', top: 5, right: 5, backgroundColor: COLORS.DANGER, borderRadius: 10, minWidth: 20, height: 20, justifyContent: 'center', alignItems: 'center' },
+  badgeText: { color: COLORS.WHITE, fontSize: 12, fontWeight: 'bold' },
+  statsRow: { flexDirection: 'row', gap: 15, marginBottom: 20 },
+  actionsContainer: { gap: 12 },
+  button: { marginVertical: 0 },
 });
 
 export default PatientDashboard;

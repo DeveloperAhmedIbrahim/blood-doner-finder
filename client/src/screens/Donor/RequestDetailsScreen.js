@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../components/CustomButton';
 import { requestAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
+import MapView, { Marker } from 'react-native-maps';
 
 const RequestDetailsScreen = ({ route, navigation }) => {
   const { requestId } = route.params;
@@ -94,6 +95,30 @@ const RequestDetailsScreen = ({ route, navigation }) => {
           </Text>
         </View>
 
+        {request.latitude && request.longitude && (
+          <View style={styles.mapContainer}>
+            <Text style={styles.label}>Location:</Text>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: parseFloat(request.latitude),
+                longitude: parseFloat(request.longitude),
+                latitudeDelta: 0.05,
+                longitudeDelta: 0.05,
+              }}
+            >
+              <Marker
+                coordinate={{
+                  latitude: parseFloat(request.latitude),
+                  longitude: parseFloat(request.longitude),
+                }}
+                title={request.hospital_name}
+                pinColor={COLORS.PRIMARY}
+              />
+            </MapView>
+          </View>
+        )}
+
         {!myResponse && (
           <>
             <CustomButton
@@ -123,6 +148,8 @@ const styles = StyleSheet.create({
   acceptBtn: { backgroundColor: COLORS.SUCCESS, marginBottom: 10 },
   rejectBtn: { backgroundColor: COLORS.DANGER },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', fontSize: 16, color: COLORS.GRAY },
+  mapContainer: { marginBottom: 20 },
+  map: { height: 250, borderRadius: 15 },
 });
 
 export default RequestDetailsScreen;

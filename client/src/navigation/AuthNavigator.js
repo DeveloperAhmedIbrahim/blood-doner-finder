@@ -1,167 +1,125 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ActivityIndicator, View } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { COLORS } from '../utils/constants';
 
-import ChooseRoleScreen from '../screens/ChooseRoleScreen';
-import RegisterScreen from '../screens/RegisterScreen';
-import LoginScreen from '../screens/LoginScreen';
-import HomeScreen from '../screens/HomeScreen';
+// Auth Screens
+import ChooseRoleScreen from '../screens/Auth/ChooseRoleScreen';
+import RegisterScreen from '../screens/Auth/RegisterScreen';
+import LoginScreen from '../screens/Auth/LoginScreen';
+
+// Donor Screens
 import DonorDashboard from '../screens/Donor/DonorDashboard';
 import CompleteProfileScreen from '../screens/Donor/CompleteProfileScreen';
 import UploadCNICScreen from '../screens/Donor/UploadCNICScreen';
 import VerificationStatusScreen from '../screens/Donor/VerificationStatusScreen';
-import HospitalDashboard from '../screens/Hospital/HospitalDashboard';
-import PendingVerificationsScreen from '../screens/Hospital/PendingVerificationsScreen';
-import VerifyDonorScreen from '../screens/Hospital/VerifyDonorScreen';
+import ActiveRequestsScreen from '../screens/Donor/ActiveRequestsScreen';
+import RequestDetailsScreen from '../screens/Donor/RequestDetailsScreen';
+import DonorDonationHistoryScreen from '../screens/Donor/DonationHistoryScreen';
+
+// Patient Screens
 import PatientDashboard from '../screens/Patient/PatientDashboard';
 import CreateRequestScreen from '../screens/Patient/CreateRequestScreen';
 import MyRequestsScreen from '../screens/Patient/MyRequestsScreen';
-import ActiveRequestsScreen from '../screens/Donor/ActiveRequestsScreen';
-import ChatListScreen from '../screens/Chat/ChatListScreen';
-import ChatScreen from '../screens/Chat/ChatScreen';
-import RequestDetailsScreen from '../screens/Donor/RequestDetailsScreen';
+
+// Hospital Screens
+import HospitalDashboard from '../screens/Hospital/HospitalDashboard';
+import PendingVerificationsScreen from '../screens/Hospital/PendingVerificationsScreen';
+import VerifyDonorScreen from '../screens/Hospital/VerifyDonorScreen';
 import RecordDonationScreen from '../screens/Hospital/RecordDonationScreen';
 import DonationHistoryScreen from '../screens/Hospital/DonationHistoryScreen';
-import DonorDonationHistoryScreen from '../screens/Donor/DonationHistoryScreen';
+
+// Chat Screens
+import ChatListScreen from '../screens/Chat/ChatListScreen';
+import ChatScreen from '../screens/Chat/ChatScreen';
+
+// Common Screens
 import NotificationsScreen from '../screens/Common/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 
 const AuthNavigator = () => {
+  const { isAuthenticated, userRole, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="ChooseRole"
         screenOptions={{
-          headerStyle: {
-            backgroundColor: '#E63946',
-          },
+          headerStyle: { backgroundColor: COLORS.PRIMARY },
           headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       >
-        <Stack.Screen
-          name="ChooseRole"
-          component={ChooseRoleScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Register"
-          component={RegisterScreen}
-          options={{ title: 'Register' }}
-        />
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ title: 'Login' }}
-        />
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ 
-            headerLeft: null,
-            gestureEnabled: false,
-          }}
-        />
-        <Stack.Screen
-          name="DonorDashboard"
-          component={DonorDashboard}
-          options={{ 
-            title: 'Donor Dashboard',
-            headerLeft: null,
-            gestureEnabled: false,
-          }}
-        />
-        <Stack.Screen
-          name="CompleteProfile"
-          component={CompleteProfileScreen}
-          options={{ title: 'Complete Profile' }}
-        />
-        <Stack.Screen
-          name="UploadCNIC"
-          component={UploadCNICScreen}
-          options={{ title: 'Upload CNIC' }}
-        />
-        <Stack.Screen
-          name="VerificationStatus"
-          component={VerificationStatusScreen}
-          options={{ title: 'Verification Status' }}
-        />
-        <Stack.Screen
-          name="HospitalDashboard"
-          component={HospitalDashboard}
-          options={{ title: 'Hospital Dashboard' }}
-        />
-        <Stack.Screen
-          name="PendingVerifications"
-          component={PendingVerificationsScreen}
-          options={{ title: 'Pending Verifications' }}
-        />
-        <Stack.Screen
-          name="VerifyDonor"
-          component={VerifyDonorScreen}
-          options={{ title: 'Verify Donor' }}
-        />
-        <Stack.Screen 
-          name="PatientDashboard" 
-          component={PatientDashboard} 
-          options={{ title: 'Patient Dashboard', headerLeft: null, gestureEnabled: false }} 
-        />
-        <Stack.Screen 
-          name="CreateRequest" 
-          component={CreateRequestScreen} 
-          options={{ title: 'Create Blood Request' }} 
-        />
-        <Stack.Screen 
-          name="MyRequests" 
-          component={MyRequestsScreen} 
-          options={{ title: 'My Requests' }} 
-        />
-        <Stack.Screen 
-          name="ActiveRequests" 
-          component={ActiveRequestsScreen} 
-          options={{ title: 'Active Requests' }} 
-        />
-        <Stack.Screen 
-          name="ChatList" 
-          component={ChatListScreen} 
-          options={{ title: 'Messages' }} 
-        />
-        <Stack.Screen 
-          name="ChatScreen" 
-          component={ChatScreen} 
-          options={{ title: 'Chat' }} 
-        />
-        <Stack.Screen 
-          name="RequestDetails" 
-          component={RequestDetailsScreen} 
-          options={{ title: 'Request Details' }} 
-        />           
-        <Stack.Screen
-          name="RecordDonation"
-          component={RecordDonationScreen}
-          options={{ title: 'Record Donation' }}
-        />
-
-        <Stack.Screen
-          name="DonationHistory"
-          component={DonationHistoryScreen}
-          options={{ title: 'Donation History' }}
-        />
-
-        <Stack.Screen
-          name="DonorDonationHistory"
-          component={DonorDonationHistoryScreen}
-          options={{ title: 'My Donations' }}
-        />
-
-        <Stack.Screen
-          name="Notifications"
-          component={NotificationsScreen}
-          options={{ title: 'Notifications' }}
-        />             
+        {!isAuthenticated ? (
+          // Auth Stack
+          <>
+            <Stack.Screen
+              name="ChooseRole"
+              component={ChooseRoleScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+          </>
+        ) : userRole === 'donor' ? (
+          // Donor Stack
+          <>
+            <Stack.Screen
+              name="DonorDashboard"
+              component={DonorDashboard}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="CompleteProfile" component={CompleteProfileScreen} />
+            <Stack.Screen name="UploadCNIC" component={UploadCNICScreen} />
+            <Stack.Screen name="VerificationStatus" component={VerificationStatusScreen} />
+            <Stack.Screen name="ActiveRequests" component={ActiveRequestsScreen} />
+            <Stack.Screen name="RequestDetails" component={RequestDetailsScreen} />
+            <Stack.Screen name="DonorDonationHistory" component={DonorDonationHistoryScreen} />
+            <Stack.Screen name="ChatList" component={ChatListScreen} />
+            <Stack.Screen name="ChatScreen" component={ChatScreen} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
+          </>
+        ) : userRole === 'patient' ? (
+          // Patient Stack
+          <>
+            <Stack.Screen
+              name="PatientDashboard"
+              component={PatientDashboard}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="CreateRequest" component={CreateRequestScreen} />
+            <Stack.Screen name="MyRequests" component={MyRequestsScreen} />
+            <Stack.Screen name="ChatList" component={ChatListScreen} />
+            <Stack.Screen name="ChatScreen" component={ChatScreen} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
+          </>
+        ) : userRole === 'hospital' ? (
+          // Hospital Stack
+          <>
+            <Stack.Screen
+              name="HospitalDashboard"
+              component={HospitalDashboard}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="PendingVerifications" component={PendingVerificationsScreen} />
+            <Stack.Screen name="VerifyDonor" component={VerifyDonorScreen} />
+            <Stack.Screen name="RecordDonation" component={RecordDonationScreen} />
+            <Stack.Screen name="DonationHistory" component={DonationHistoryScreen} />
+            <Stack.Screen name="ChatList" component={ChatListScreen} />
+            <Stack.Screen name="ChatScreen" component={ChatScreen} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
+          </>
+        ) : null}
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,32 +1,54 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
+  TouchableOpacity,
   ScrollView,
   Alert,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../context/AuthContext';
 import CustomButton from '../../components/CustomButton';
-import { donorAPI, notificationAPI } from '../../services/api';
+import StatCard from '../../components/StatCard';
+import GradientCard from '../../components/GradientCard';
+import { donorAPI, chatAPI, notificationAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
-import { chatAPI } from '../../services/api';
-
+import notificationService from '../../services/notificationService';
 
 const DonorDashboard = ({ navigation }) => {
+  const { logout } = useAuth();
   const [userData, setUserData] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [verificationStatus, setVerificationStatus] = useState(null);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);  
-  const [notificationCount, setNotificationCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   useEffect(() => {
-    loadData();
-  }, []);
+    notificationService.startPolling();
+    
+    const unsubscribe = notificationService.subscribe((count) => {
+      setUnreadNotifications(count);
+      // Optional: Show alert
+      // notificationService.showLocalNotification('New Notification', 'You have new notifications');
+    });
+
+    return () => {
+      notificationService.stopPolling();
+      unsubscribe();
+    };
+  }, []);    
 
   const loadData = async () => {
     try {
@@ -34,155 +56,141 @@ const DonorDashboard = ({ navigation }) => {
       if (userDataStr) {
         setUserData(JSON.parse(userDataStr));
       }
-      await fetchProfileData();
-      const notifRes = await notificationAPI.getUnreadCount();
-      if (notifRes.success) {
-        setNotificationCount(notifRes.data.unread_count);
-      }
+
+      const [profileRes, statusRes, chatRes, notifRes] = await Promise.all([
+        donorAPI.getProfile(),
+        donorAPI.getVerificationStatus(),
+        chatAPI.getUnreadCount(),
+        notificationAPI.getUnreadCount(),
+      ]);
+
+      if (profileRes.success) setProfileData(profileRes.data);
+      if (statusRes.success) setVerificationStatus(statusRes.data);
+      if (chatRes.success) setUnreadMessages(chatRes.data.unread_count);
+      if (notifRes.success) setUnreadNotifications(notifRes.data.unread_count);
     } catch (error) {
       console.error('Load data error:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const fetchProfileData = async () => {
-    try {
-      const [profileRes, statusRes] = await Promise.all([
-        donorAPI.getProfile(),
-        donorAPI.getVerificationStatus(),
-      ]);
-
-      if (profileRes.success) {
-        setProfileData(profileRes.data);
-      }
-      if (statusRes.success) {
-        setVerificationStatus(statusRes.data);
-      }
-      // Get unread messages count
-      const unreadRes = await chatAPI.getUnreadCount();
-      if (unreadRes.success) {
-        setUnreadCount(unreadRes.data.unread_count);
-      }      
-    } catch (error) {
-      console.error('Fetch profile error:', error.message);
-      Alert.alert('Error', error.message || 'Failed to load data');
-    }
-  };
-
-  const onRefresh = async () => {
+  const onRefresh = () => {
     setRefreshing(true);
-    await fetchProfileData();
-    setRefreshing(false);
+    loadData();
   };
 
-  const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure?', [
+      { text: 'Cancel' },
       {
         text: 'Logout',
         style: 'destructive',
-        onPress: async () => {
-          await AsyncStorage.removeItem('userToken');
-          await AsyncStorage.removeItem('userData');
-          navigation.replace('ChooseRole');
-        },
+        onPress: () => logout(),
       },
     ]);
   };
 
   const getVerificationBadge = () => {
     if (!verificationStatus) {
-      return { text: 'Not Submitted', color: COLORS.GRAY };
+      return { text: 'Not Submitted', color: COLORS.GRAY, icon: '❓' };
     }
     switch (verificationStatus.verification_status) {
       case 'pending':
-        return { text: 'Pending', color: COLORS.WARNING };
+        return { text: 'Pending Review', color: COLORS.WARNING, icon: '⏳' };
       case 'approved':
-        return { text: 'Verified ✓', color: COLORS.SUCCESS };
+        return { text: 'Verified Donor', color: COLORS.SUCCESS, icon: '✅' };
       case 'rejected':
-        return { text: 'Rejected', color: COLORS.DANGER };
+        return { text: 'Rejected', color: COLORS.DANGER, icon: '❌' };
       default:
-        return { text: 'Unknown', color: COLORS.GRAY };
+        return { text: 'Unknown', color: COLORS.GRAY, icon: '❓' };
     }
   };
+
+  const badge = getVerificationBadge();
+  const isProfileComplete = profileData?.profile_completed;
+  const isVerified = profileData?.is_verified;
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
-          <Text>Loading...</Text>
+          <Text style={styles.loadingText}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  const badge = getVerificationBadge();
-  const isProfileComplete = profileData?.profile_completed;
-  const isVerified = profileData?.is_verified === 1;
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.welcomeText}>Welcome, Donor!</Text>
-          <Text style={styles.nameText}>{userData?.name}</Text>
+          <View>
+            <Text style={styles.greeting}>Hello,</Text>
+            <Text style={styles.name}>{userData?.name || 'Donor'}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.notificationButton}
+            onPress={() => navigation.navigate('Notifications')}
+          >
+            <Text style={styles.notificationIcon}>🔔</Text>
+            {unreadNotifications > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{unreadNotifications}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
 
-        {/* Status Card */}
-        <View style={styles.statusCard}>
-          <Text style={styles.statusLabel}>Verification Status</Text>
-          <View style={[styles.badge, { backgroundColor: badge.color }]}>
-            <Text style={styles.badgeText}>{badge.text}</Text>
+        {/* Verification Status Card */}
+        <GradientCard colors={[badge.color]}>
+          <View style={styles.statusContent}>
+            <Text style={styles.statusIcon}>{badge.icon}</Text>
+            <View style={styles.statusTextContainer}>
+              <Text style={styles.statusTitle}>Verification Status</Text>
+              <Text style={styles.statusText}>{badge.text}</Text>
+            </View>
           </View>
 
           {verificationStatus?.rejection_reason && (
             <View style={styles.rejectionBox}>
-              <Text style={styles.rejectionLabel}>Rejection Reason:</Text>
               <Text style={styles.rejectionText}>
-                {verificationStatus.rejection_reason}
+                Reason: {verificationStatus.rejection_reason}
               </Text>
             </View>
           )}
-        </View>
+        </GradientCard>
 
-        {/* Profile Info Card */}
-        {isProfileComplete && (
-          <View style={styles.infoCard}>
-            <Text style={styles.cardTitle}>Profile Information</Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Blood Group:</Text>
-              <Text style={styles.infoValue}>
-                {profileData?.blood_group || 'N/A'}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>CNIC:</Text>
-              <Text style={styles.infoValue}>
-                {profileData?.cnic || 'N/A'}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Address:</Text>
-              <Text style={styles.infoValue}>
-                {profileData?.address || 'Not provided'}
-              </Text>
-            </View>
-          </View>
-        )}
+        {/* Stats Cards */}
+        <View style={styles.statsRow}>
+          <StatCard
+            icon="💬"
+            title="Messages"
+            value={unreadMessages}
+            color={COLORS.SECONDARY}
+            onPress={() => navigation.navigate('ChatList')}
+          />
+          <StatCard
+            icon="🩸"
+            title="Blood Type"
+            value={profileData?.blood_group || 'N/A'}
+            color={COLORS.PRIMARY}
+          />
+        </View>
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
           {!isProfileComplete && (
             <CustomButton
-              title="Complete Profile"
+              title="Complete Your Profile"
               onPress={() => navigation.navigate('CompleteProfile')}
-              style={styles.actionButton}
+              style={[styles.button, { backgroundColor: COLORS.PRIMARY }]}
             />
           )}
 
@@ -190,7 +198,7 @@ const DonorDashboard = ({ navigation }) => {
             <CustomButton
               title="Upload CNIC for Verification"
               onPress={() => navigation.navigate('UploadCNIC')}
-              style={styles.actionButton}
+              style={[styles.button, { backgroundColor: COLORS.PRIMARY }]}
             />
           )}
 
@@ -198,44 +206,34 @@ const DonorDashboard = ({ navigation }) => {
             <CustomButton
               title="Re-upload CNIC"
               onPress={() => navigation.navigate('UploadCNIC')}
-              style={styles.actionButton}
+              style={[styles.button, { backgroundColor: COLORS.WARNING }]}
             />
           )}
 
           {isVerified && (
-            <CustomButton
-              title={`Messages ${unreadCount > 0 ? `(${unreadCount})` : ''}`}
-              onPress={() => navigation.navigate('ChatList')}
-              style={[styles.actionButton, { backgroundColor: COLORS.SECONDARY }]}
-            />
-          )}          
-
-          {isVerified && (
-            <CustomButton
-              title="View Blood Requests"
-              onPress={() => navigation.navigate('ActiveRequests')}
-              style={[styles.actionButton, { backgroundColor: COLORS.SUCCESS }]}
-            />
+            <>
+              <CustomButton
+                title="View Blood Requests"
+                onPress={() => navigation.navigate('ActiveRequests')}
+                style={[styles.button, { backgroundColor: COLORS.SUCCESS }]}
+              />
+              <CustomButton
+                title="My Donation History"
+                onPress={() => navigation.navigate('DonorDonationHistory')}
+                style={[styles.button, { backgroundColor: COLORS.SECONDARY }]}
+              />
+              <CustomButton
+                title="Messages"
+                onPress={() => navigation.navigate('ChatList')}
+                style={[styles.button, { backgroundColor: COLORS.SECONDARY }]}
+              />
+            </>
           )}
-
-          {isVerified && (
-            <CustomButton
-              title="My Donation History"
-              onPress={() => navigation.navigate('DonorDonationHistory')}
-              style={[styles.actionButton, { backgroundColor: COLORS.SUCCESS }]}
-            />
-          )}          
-
-          <CustomButton
-            title={`Notifications ${notificationCount > 0 ? `(${notificationCount})` : ''}`}
-            onPress={() => navigation.navigate('Notifications')}
-            style={[styles.actionButton, { backgroundColor: COLORS.WARNING }]}
-          />
 
           <CustomButton
             title="Logout"
             onPress={handleLogout}
-            style={[styles.actionButton, { backgroundColor: COLORS.GRAY }]}
+            style={[styles.button, { backgroundColor: COLORS.GRAY }]}
           />
         </View>
       </ScrollView>
@@ -246,107 +244,106 @@ const DonorDashboard = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.LIGHT,
+    backgroundColor: '#F5F7FA',
   },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scrollContent: {
-    padding: 20,
-  },
-  header: {
-    marginBottom: 20,
-  },
-  welcomeText: {
+  loadingText: {
     fontSize: 16,
     color: COLORS.GRAY,
   },
-  nameText: {
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  greeting: {
+    fontSize: 16,
+    color: COLORS.GRAY,
+  },
+  name: {
     fontSize: 28,
     fontWeight: 'bold',
     color: COLORS.DARK,
   },
-  statusCard: {
+  notificationButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: COLORS.WHITE,
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    position: 'relative',
   },
-  statusLabel: {
-    fontSize: 16,
-    color: COLORS.GRAY,
-    marginBottom: 10,
+  notificationIcon: {
+    fontSize: 24,
   },
   badge: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: COLORS.DANGER,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   badgeText: {
     color: COLORS.WHITE,
+    fontSize: 12,
     fontWeight: 'bold',
+  },
+  statusContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusIcon: {
+    fontSize: 50,
+    marginRight: 15,
+  },
+  statusTextContainer: {
+    flex: 1,
+  },
+  statusTitle: {
     fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    marginBottom: 5,
+  },
+  statusText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.WHITE,
   },
   rejectionBox: {
     marginTop: 15,
     padding: 10,
-    backgroundColor: '#FFE5E5',
-    borderRadius: 8,
-  },
-  rejectionLabel: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: COLORS.DANGER,
-    marginBottom: 5,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 10,
   },
   rejectionText: {
-    fontSize: 14,
-    color: COLORS.DARK,
+    color: COLORS.WHITE,
+    fontSize: 13,
   },
-  infoCard: {
-    backgroundColor: COLORS.WHITE,
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.DARK,
-    marginBottom: 15,
-  },
-  infoRow: {
+  statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: COLORS.GRAY,
-  },
-  infoValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.DARK,
+    gap: 15,
+    marginVertical: 20,
   },
   actionsContainer: {
-    gap: 15,
+    gap: 12,
   },
-  actionButton: {
-    marginTop: 0,
+  button: {
+    marginVertical: 0,
   },
 });
 

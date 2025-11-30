@@ -12,9 +12,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
+import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 
 const LoginScreen = ({ navigation }) => {
+  const { login } = useAuth(); 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -58,24 +60,11 @@ const LoginScreen = ({ navigation }) => {
       const response = await authAPI.login(formData);
 
       if (response.success) {
-        await AsyncStorage.setItem('userToken', response.data.token);
-        await AsyncStorage.setItem('userData', JSON.stringify(response.data));
+        // Use context login instead of AsyncStorage directly
+        await login(response.data.token, response.data);
 
-        // Role-based navigation
-        let dashboard = 'Home';
-        if(response.data.role === 'donor') {
-          dashboard = 'DonorDashboard';
-        } else if(response.data.role === 'hospital') {
-          dashboard = 'HospitalDashboard';
-        } else if(response.data.role === 'patient') {
-          dashboard = 'PatientDashboard';
-        }
-
-        Alert.alert(
-          'Success!',
-          `Welcome back, ${response.data.name}!`,
-          [{ text: 'OK', onPress: () => navigation.replace(dashboard) }]
-        );
+        Alert.alert('Success', `Welcome back, ${response.data.name}!`);
+        // Navigation handled automatically by AuthNavigator
       }
     } catch (error) {
       Alert.alert('Error', error.message || 'Login failed');

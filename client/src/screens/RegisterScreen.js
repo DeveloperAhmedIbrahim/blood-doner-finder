@@ -13,8 +13,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
 import { authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const RegisterScreen = ({ route, navigation }) => {
+  const { login } = useAuth(); 
   const { role } = route.params;
   
   const [formData, setFormData] = useState({
@@ -87,24 +89,9 @@ const RegisterScreen = ({ route, navigation }) => {
       const response = await authAPI.register(userData);
 
       if (response.success) {
-        await AsyncStorage.setItem('userToken', response.data.token);
-        await AsyncStorage.setItem('userData', JSON.stringify(response.data));
-
-        // Role-based navigation
-        let dashboard = 'Home';
-        if(response.data.role === 'donor') {
-          dashboard = 'DonorDashboard';
-        } else if(response.data.role === 'hospital') {
-          dashboard = 'HospitalDashboard';
-        } else if(response.data.role === 'patient') {
-          dashboard = 'PatientDashboard';
-        }
-
-        Alert.alert(
-          'Success!',
-          'Registration successful',
-          [{ text: 'OK', onPress: () => navigation.replace(dashboard) }]
-        );
+        await login(response.data.token, response.data);
+        Alert.alert('Success', 'Registration successful');
+        // Navigation automatic
       }
     } catch (error) {
       Alert.alert('Error', error.message || 'Registration failed');

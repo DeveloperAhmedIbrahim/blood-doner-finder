@@ -1,17 +1,20 @@
 // src/screens/Patient/MyRequestsScreen.js
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { requestAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
+import { useFocusEffect } from '@react-navigation/native';
 
 const MyRequestsScreen = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchRequests();
+    }, [])
+  );
 
   const fetchRequests = async () => {
     try {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,15 +11,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../utils/constants';
 import { hospitalAPI } from '../../services/api';
+import { useFocusEffect } from '@react-navigation/native';
 
 const PendingVerificationsScreen = ({ navigation }) => {
   const [verifications, setVerifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchVerifications();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchVerifications();
+    }, [])
+  );
 
   const fetchVerifications = async () => {
   try {

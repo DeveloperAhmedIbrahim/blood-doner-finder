@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,15 +11,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { notificationAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
+import { useFocusEffect } from '@react-navigation/native';
 
 const NotificationsScreen = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotifications();
+    }, [])
+  );
 
   const fetchNotifications = async () => {
     try {

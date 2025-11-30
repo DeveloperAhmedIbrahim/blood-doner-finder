@@ -1,5 +1,5 @@
 // src/screens/Donor/ActiveRequestsScreen.js
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,15 +12,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { requestAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ActiveRequestsScreen = ({ navigation }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchRequests();
+    }, [])
+  );
 
   const fetchRequests = async () => {
     try {
