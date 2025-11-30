@@ -161,6 +161,26 @@ export const requestAPI = {
     }
   },
 
+  // Get all requests (Hospital)
+  getAllRequests: async () => {
+    try {
+      const response = await api.get('/requests/all');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch all requests' };
+    }
+  },
+
+  // Get single request details (for donor to view before responding)
+  getRequestDetails: async (requestId) => {
+    try {
+      const response = await api.get(`/requests/${requestId}/details`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch request details' };
+    }
+  },    
+
   // Cancel request
   cancelRequest: async (requestId) => {
     try {
@@ -183,16 +203,6 @@ export const requestAPI = {
       throw error.response?.data || { message: 'Failed to respond' };
     }
   },
-
-// Get single request details (for donor to view before responding)
-  getRequestDetails: async (requestId) => {
-    try {
-      const response = await api.get(`/requests/${requestId}/details`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Failed to fetch request details' };
-    }
-  },  
 };
 
 export const chatAPI = {
@@ -236,6 +246,120 @@ export const chatAPI = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Failed to fetch unread count' };
+    }
+  },
+
+  // Get all requests (for Hospital)
+  getAllRequests: async () => {
+    try {
+      const response = await api.get('/requests/all');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch all requests' };
+    }
+  },  
+};
+
+export const donationAPI = {
+  // Record donation (Hospital)
+  recordDonation: async (donationData) => {
+    try {
+      const response = await api.post('/donations/record', donationData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to record donation' };
+    }
+  },
+
+  // Get hospital donations
+  getHospitalDonations: async () => {
+    try {
+      const response = await api.get('/donations/hospital-donations');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch donations' };
+    }
+  },
+
+  // Get donor history
+  getDonorHistory: async () => {
+    try {
+      const response = await api.get('/donations/donor-history');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch history' };
+    }
+  },
+
+  // Check eligibility
+  checkEligibility: async (donorId) => {
+    try {
+      const response = await api.get(`/donations/check-eligibility/${donorId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to check eligibility' };
+    }
+  },
+
+  // Get stats
+  getStats: async () => {
+    try {
+      const response = await api.get('/donations/stats');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch stats' };
+    }
+  },
+};
+
+export const notificationAPI = {
+  // Get notifications
+  getNotifications: async () => {
+    try {
+      const response = await api.get('/notifications');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch notifications' };
+    }
+  },
+
+  // Get unread count
+  getUnreadCount: async () => {
+    try {
+      const response = await api.get('/notifications/unread-count');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch unread count' };
+    }
+  },
+
+  // Mark as read
+  markAsRead: async (notificationId) => {
+    try {
+      const response = await api.post(`/notifications/${notificationId}/read`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to mark as read' };
+    }
+  },
+
+  // Mark all as read
+  markAllAsRead: async () => {
+    try {
+      const response = await api.post('/notifications/read-all');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to mark all as read' };
+    }
+  },
+
+  // Delete notification
+  deleteNotification: async (notificationId) => {
+    try {
+      const response = await api.delete(`/notifications/${notificationId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to delete notification' };
     }
   },
 };

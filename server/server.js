@@ -8,7 +8,9 @@ const authRoutes = require('./routes/authRoutes');
 const donorRoutes = require('./routes/donorRoutes');
 const hospitalRoutes = require('./routes/hospitalRoutes');
 const requestRoutes = require('./routes/requestRoutes');
-const chatRoutes = require('./routes/chatRoutes');  // NEW
+const chatRoutes = require('./routes/chatRoutes');
+const donationRoutes = require('./routes/donationRoutes');        // NEW
+const notificationRoutes = require('./routes/notificationRoutes'); // NEW
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,7 +28,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/donor', donorRoutes);
 app.use('/api/hospital', hospitalRoutes);
 app.use('/api/requests', requestRoutes);
-app.use('/api/chat', chatRoutes);  // NEW
+app.use('/api/chat', chatRoutes);
+app.use('/api/donations', donationRoutes);        // NEW
+app.use('/api/notifications', notificationRoutes); // NEW
 
 // Test route
 app.get('/', (req, res) => {

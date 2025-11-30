@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from '../../components/CustomButton';
 import { COLORS } from '../../utils/constants';
-import { requestAPI } from '../../services/api';
+import { notificationAPI, requestAPI } from '../../services/api';
 import { chatAPI } from '../../services/api';
 
 const PatientDashboard = ({ navigation }) => {
@@ -20,6 +20,7 @@ const PatientDashboard = ({ navigation }) => {
   const [myRequestsCount, setMyRequestsCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
 
 useEffect(() => {
     loadData();
@@ -43,6 +44,11 @@ useEffect(() => {
 
       if (unreadRes.success) {
         setUnreadCount(unreadRes.data.unread_count);
+      }
+
+      const notifRes = await notificationAPI.getUnreadCount();
+      if (notifRes.success) {
+        setNotificationCount(notifRes.data.unread_count);
       }
     } catch (error) {
       console.error('Load data error:', error.message);
@@ -101,7 +107,13 @@ useEffect(() => {
           title={`Messages ${unreadCount > 0 ? `(${unreadCount})` : ''}`}
           onPress={() => navigation.navigate('ChatList')}
           style={[styles.secondaryBtn, { backgroundColor: COLORS.SECONDARY }]}
-        />        
+        />
+
+        <CustomButton
+          title={`Notifications ${notificationCount > 0 ? `(${notificationCount})` : ''}`}
+          onPress={() => navigation.navigate('Notifications')}
+          style={[styles.actionButton, { backgroundColor: COLORS.WARNING }]}
+        />
 
         <CustomButton
           title="Logout"

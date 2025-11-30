@@ -12,10 +12,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from '../../components/CustomButton';
 import { COLORS } from '../../utils/constants';
-import { hospitalAPI } from '../../services/api';
+import { hospitalAPI, notificationAPI } from '../../services/api';
 
 const HospitalDashboard = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [stats, setStats] = useState({
     pendingVerifications: 0,
     totalVerified: 0,
@@ -33,6 +34,11 @@ const HospitalDashboard = ({ navigation }) => {
         setUserData(JSON.parse(userDataStr));
       }
       await fetchStats();
+      const notifRes = await notificationAPI.getUnreadCount();
+      if (notifRes.success) {
+        setNotificationCount(notifRes.data.unread_count);
+      }
+
     } catch (error) {
       console.error('Load data error:', error);
     }
@@ -115,19 +121,21 @@ const fetchStats = async () => {
           />
 
           <CustomButton
-            title="View Blood Requests"
-            onPress={() =>
-              Alert.alert('Coming Soon', 'This feature will be available in Module 3')
-            }
+            title="View Donation History"
+            onPress={() => navigation.navigate('DonationHistory')}
             style={[styles.actionButton, { backgroundColor: COLORS.SECONDARY }]}
           />
 
           <CustomButton
             title="Record Donation"
-            onPress={() =>
-              Alert.alert('Coming Soon', 'This feature will be available in Module 5')
-            }
+            onPress={() => navigation.navigate('RecordDonation')}
             style={[styles.actionButton, { backgroundColor: COLORS.SUCCESS }]}
+          />
+
+          <CustomButton
+            title={`Notifications ${notificationCount > 0 ? `(${notificationCount})` : ''}`}
+            onPress={() => navigation.navigate('Notifications')}
+            style={[styles.actionButton, { backgroundColor: COLORS.WARNING }]}
           />
 
           <CustomButton

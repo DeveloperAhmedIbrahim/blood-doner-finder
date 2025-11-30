@@ -20,6 +20,10 @@ import ActiveRequestsScreen from '../screens/Donor/ActiveRequestsScreen';
 import ChatListScreen from '../screens/Chat/ChatListScreen';
 import ChatScreen from '../screens/Chat/ChatScreen';
 import RequestDetailsScreen from '../screens/Donor/RequestDetailsScreen';
+import RecordDonationScreen from '../screens/Hospital/RecordDonationScreen';
+import DonationHistoryScreen from '../screens/Hospital/DonationHistoryScreen';
+import DonorDonationHistoryScreen from '../screens/Donor/DonationHistoryScreen';
+import NotificationsScreen from '../screens/Common/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -134,7 +138,30 @@ const AuthNavigator = () => {
           name="RequestDetails" 
           component={RequestDetailsScreen} 
           options={{ title: 'Request Details' }} 
-        />                
+        />           
+        <Stack.Screen
+          name="RecordDonation"
+          component={RecordDonationScreen}
+          options={{ title: 'Record Donation' }}
+        />
+
+        <Stack.Screen
+          name="DonationHistory"
+          component={DonationHistoryScreen}
+          options={{ title: 'Donation History' }}
+        />
+
+        <Stack.Screen
+          name="DonorDonationHistory"
+          component={DonorDonationHistoryScreen}
+          options={{ title: 'My Donations' }}
+        />
+
+        <Stack.Screen
+          name="Notifications"
+          component={NotificationsScreen}
+          options={{ title: 'Notifications' }}
+        />             
       </Stack.Navigator>
     </NavigationContainer>
   );
