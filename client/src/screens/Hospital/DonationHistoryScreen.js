@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { donationAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
+import { useFocusEffect } from '@react-navigation/native';
 
 const DonationHistoryScreen = () => {
   const [donations, setDonations] = useState([]);

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -140,7 +140,7 @@ const DonorDashboard = ({ navigation }) => {
             onPress={() => navigation.navigate('Notifications')}
           >
             <Text style={styles.notificationIcon}>🔔</Text>
-            {unreadNotifications > 0 && (
+            {(unreadNotifications > 0) && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{unreadNotifications}</Text>
               </View>
@@ -158,7 +158,7 @@ const DonorDashboard = ({ navigation }) => {
             </View>
           </View>
 
-          {verificationStatus?.rejection_reason && (
+          {(verificationStatus?.rejection_reason) && (
             <View style={styles.rejectionBox}>
               <Text style={styles.rejectionText}>
                 Reason: {verificationStatus.rejection_reason}
@@ -180,13 +180,13 @@ const DonorDashboard = ({ navigation }) => {
             icon="🩸"
             title="Blood Type"
             value={profileData?.blood_group || 'N/A'}
-            color={COLORS.PRIMARY}
+            color={COLORS.SUCCESS}
           />
         </View>
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
-          {!isProfileComplete && (
+          {(!isProfileComplete) && (
             <CustomButton
               title="Complete Your Profile"
               onPress={() => navigation.navigate('CompleteProfile')}
@@ -194,7 +194,7 @@ const DonorDashboard = ({ navigation }) => {
             />
           )}
 
-          {isProfileComplete && !verificationStatus && (
+          {(isProfileComplete && !verificationStatus) && (
             <CustomButton
               title="Upload CNIC for Verification"
               onPress={() => navigation.navigate('UploadCNIC')}
@@ -202,7 +202,7 @@ const DonorDashboard = ({ navigation }) => {
             />
           )}
 
-          {verificationStatus?.verification_status === 'rejected' && (
+          {(verificationStatus?.verification_status === 'rejected') && (
             <CustomButton
               title="Re-upload CNIC"
               onPress={() => navigation.navigate('UploadCNIC')}
@@ -210,7 +210,7 @@ const DonorDashboard = ({ navigation }) => {
             />
           )}
 
-          {isVerified && (
+          {(isVerified) && (
             <>
               <CustomButton
                 title="View Blood Requests"

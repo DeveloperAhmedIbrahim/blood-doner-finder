@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../components/CustomButton';
 import { requestAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
-// import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 
 const RequestDetailsScreen = ({ route, navigation }) => {
   const { requestId } = route.params;
@@ -84,6 +84,28 @@ const RequestDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.value}>{request.additional_notes || 'None'}</Text>
 
           <Text style={styles.label}>Location:</Text>
+          {request.latitude && request.longitude && (
+            <View style={styles.mapContainer}>
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude: parseFloat(request.latitude),
+                  longitude: parseFloat(request.longitude),
+                  latitudeDelta: 0.05,
+                  longitudeDelta: 0.05,
+                }}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: parseFloat(request.latitude),
+                    longitude: parseFloat(request.longitude),
+                  }}
+                  title={request.hospital_name}
+                  pinColor={COLORS.PRIMARY}
+                />
+              </MapView>
+            </View>
+          )}          
           <Text style={styles.value}>Lat: {request.latitude}, Lng: {request.longitude}</Text>
 
           <Text style={styles.label}>Status:</Text>
@@ -94,30 +116,6 @@ const RequestDetailsScreen = ({ route, navigation }) => {
             {myResponse ? myResponse.toUpperCase() : 'Not responded yet'}
           </Text>
         </View>
-
-        {request.latitude && request.longitude && (
-          <View style={styles.mapContainer}>
-            <Text style={styles.label}>Location:</Text>
-            {/* <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: parseFloat(request.latitude),
-                longitude: parseFloat(request.longitude),
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05,
-              }}
-            >
-              <Marker
-                coordinate={{
-                  latitude: parseFloat(request.latitude),
-                  longitude: parseFloat(request.longitude),
-                }}
-                title={request.hospital_name}
-                pinColor={COLORS.PRIMARY}
-              />
-            </MapView> */}
-          </View>
-        )}
 
         {!myResponse && (
           <>

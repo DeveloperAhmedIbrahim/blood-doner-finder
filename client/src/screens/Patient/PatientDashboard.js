@@ -1,7 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../context/AuthContext';
 import CustomButton from '../../components/CustomButton';
@@ -9,6 +8,7 @@ import StatCard from '../../components/StatCard';
 import { requestAPI, chatAPI, notificationAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
 import notificationService from '../../services/notificationService';
+import { useFocusEffect } from '@react-navigation/native';
 
 const PatientDashboard = ({ navigation }) => {
   const { logout } = useAuth();
