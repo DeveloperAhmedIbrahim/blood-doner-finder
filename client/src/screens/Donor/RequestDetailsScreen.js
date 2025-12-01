@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../components/CustomButton';
 import { requestAPI } from '../../services/api';
 import { COLORS } from '../../utils/constants';
-import MapView, { Marker } from 'react-native-maps';
+// import MapView, { Marker } from 'react-native-maps';
 
 const RequestDetailsScreen = ({ route, navigation }) => {
   const { requestId } = route.params;
@@ -98,7 +98,7 @@ const RequestDetailsScreen = ({ route, navigation }) => {
         {request.latitude && request.longitude && (
           <View style={styles.mapContainer}>
             <Text style={styles.label}>Location:</Text>
-            <MapView
+            {/* <MapView
               style={styles.map}
               initialRegion={{
                 latitude: parseFloat(request.latitude),
@@ -115,7 +115,7 @@ const RequestDetailsScreen = ({ route, navigation }) => {
                 title={request.hospital_name}
                 pinColor={COLORS.PRIMARY}
               />
-            </MapView>
+            </MapView> */}
           </View>
         )}
 

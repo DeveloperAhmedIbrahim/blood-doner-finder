@@ -6,9 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import { COLORS } from '../utils/constants';
 
 // Auth Screens
-import ChooseRoleScreen from '../screens/Auth/ChooseRoleScreen';
-import RegisterScreen from '../screens/Auth/RegisterScreen';
-import LoginScreen from '../screens/Auth/LoginScreen';
+import ChooseRoleScreen from '../screens/ChooseRoleScreen';
+import RegisterScreen from '../screens/RegisterScreen';
+import LoginScreen from '../screens/LoginScreen';
 
 // Donor Screens
 import DonorDashboard from '../screens/Donor/DonorDashboard';
