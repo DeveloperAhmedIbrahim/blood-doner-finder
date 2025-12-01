@@ -36,7 +36,8 @@ const ChooseRoleScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Blood Donor Finder</Text>
+        <Text style={styles.title}>One Drop</Text>
+        <Text style={styles.subtitle}>Every Drop Matters</Text>
         <Text style={styles.subtitle}>Choose your role to continue</Text>
 
         <View style={styles.rolesContainer}>
