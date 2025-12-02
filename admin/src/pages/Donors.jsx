@@ -1,164 +1,100 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Chip,
-  Tabs,
-  Tab,
-} from '@mui/material';
+import { Box, Typography, Paper, Tabs, Tab, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button, Chip } from '@mui/material';
 import { adminAPI } from '../services/api';
 
-const Donors = () => {
+export default function Donors() {
   const [tab, setTab] = useState(0);
   const [donors, setDonors] = useState([]);
-  const [pendingDonors, setPendingDonors] = useState([]);
+  const [pending, setPending] = useState([]);
 
-  useEffect(() => {
-    fetchDonors();
-    fetchPendingDonors();
-  }, []);
+  useEffect(() => { fetchAll(); }, []);
 
-  const fetchDonors = async () => {
+  const fetchAll = async () => {
     try {
-      const response = await adminAPI.getAllDonors();
-      if (response.success) {
-        setDonors(response.data);
-      }
-    } catch (error) {
-      console.error('Fetch donors error:', error);
-    }
+      const a = await adminAPI.getAllDonors();
+      if (a.success) setDonors(a.data || []);
+      const b = await adminAPI.getPendingDonors();
+      if (b.success) setPending(b.data || []);
+    } catch (err) { console.error(err); }
   };
 
-  const fetchPendingDonors = async () => {
+  const handleVerify = async (id, status) => {
     try {
-      const response = await adminAPI.getPendingDonors();
-      if (response.success) {
-        setPendingDonors(response.data);
-      }
-    } catch (error) {
-      console.error('Fetch pending donors error:', error);
-    }
-  };
-
-  const handleVerify = async (donorId, status) => {
-    try {
-      await adminAPI.verifyDonor(donorId, status, null);
-      alert(`Donor ${status} successfully`);
-      fetchDonors();
-      fetchPendingDonors();
-    } catch (error) {
-      alert('Failed to verify donor');
-    }
+      await adminAPI.verifyDonor(id, status);
+      alert('Done');
+      fetchAll();
+    } catch (err) { console.error(err); alert('Failed'); }
   };
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom fontWeight="bold">
-        Donors Management
-      </Typography>
+      <Typography variant="h4" gutterBottom>Donors</Typography>
 
-      <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)} sx={{ mb: 3 }}>
-        <Tab label="All Donors" />
-        <Tab label={`Pending Verification (${pendingDonors.length})`} />
-      </Tabs>
+      <Paper sx={{ p: 2 }}>
+        <Tabs value={tab} onChange={(e, v) => setTab(v)}>
+          <Tab label="All Donors" />
+          <Tab label={`Pending (${pending.length})`} />
+        </Tabs>
 
-      {tab === 0 && (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Blood Group</TableCell>
-                <TableCell>CNIC</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Last Donation</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {donors.map((donor) => (
-                <TableRow key={donor.id}>
-                  <TableCell>{donor.id}</TableCell>
-                  <TableCell>{donor.name}</TableCell>
-                  <TableCell>
-                    <Chip label={donor.blood_group} color="error" size="small" />
-                  </TableCell>
-                  <TableCell>{donor.cnic}</TableCell>
-                  <TableCell>
-                    {donor.is_verified ? (
-                      <Chip label="Verified" color="success" size="small" />
-                    ) : (
-                      <Chip label="Pending" color="warning" size="small" />
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {donor.last_donation_date || 'Never'}
-                  </TableCell>
+        {tab === 0 && (
+          <TableContainer sx={{ mt: 2 }}>
+            <Table>
+              <TableHead sx={{ background: '#f6f8fa' }}>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Blood</TableCell>
+                  <TableCell>CNIC</TableCell>
+                  <TableCell>Verified</TableCell>
+                  <TableCell>Last Donation</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+              </TableHead>
+              <TableBody>
+                {donors.map(d => (
+                  <TableRow key={d.id}>
+                    <TableCell>{d.id}</TableCell>
+                    <TableCell>{d.name}</TableCell>
+                    <TableCell><Chip label={d.blood_group || 'N/A'} color="error" size="small"/></TableCell>
+                    <TableCell>{d.cnic || '-'}</TableCell>
+                    <TableCell>{d.is_verified ? 'Yes' : 'No'}</TableCell>
+                    <TableCell>{d.last_donation_date || 'Never'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
-      {tab === 1 && (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Blood Group</TableCell>
-                <TableCell>CNIC</TableCell>
-                <TableCell>Submitted</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {pendingDonors.map((donor) => (
-                <TableRow key={donor.id}>
-                  <TableCell>{donor.id}</TableCell>
-                  <TableCell>{donor.name}</TableCell>
-                  <TableCell>
-                    <Chip label={donor.blood_group} color="error" size="small" />
-                  </TableCell>
-                  <TableCell>{donor.cnic}</TableCell>
-                  <TableCell>
-                    {new Date(donor.submitted_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      size="small"
-                      color="success"
-                      sx={{ mr: 1 }}
-                      onClick={() => handleVerify(donor.id, 'approved')}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={() => handleVerify(donor.id, 'rejected')}
-                    >
-                      Reject
-                    </Button>
-                  </TableCell>
+        {tab === 1 && (
+          <TableContainer sx={{ mt: 2 }}>
+            <Table>
+              <TableHead sx={{ background: '#f6f8fa' }}>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Blood</TableCell>
+                  <TableCell>Submitted</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+              </TableHead>
+              <TableBody>
+                {pending.map(p => (
+                  <TableRow key={p.id}>
+                    <TableCell>{p.donor_id}</TableCell>
+                    <TableCell>{p.name}</TableCell>
+                    <TableCell>{p.blood_group || '-'}</TableCell>
+                    <TableCell>{new Date(p.submitted_at).toLocaleString()}</TableCell>
+                    <TableCell>
+                      <Button size="small" variant="contained" color="success" sx={{ mr: 1 }} onClick={() => handleVerify(p.id, 'approved')}>Approve</Button>
+                      <Button size="small" variant="outlined" color="error" onClick={() => handleVerify(p.id, 'rejected')}>Reject</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Paper>
     </Box>
   );
-};
-
-export default Donors;
+}

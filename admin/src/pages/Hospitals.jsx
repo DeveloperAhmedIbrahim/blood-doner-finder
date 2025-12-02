@@ -1,100 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Switch,
-} from '@mui/material';
+import { Box, Typography, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Switch } from '@mui/material';
 import { adminAPI } from '../services/api';
 
-const Hospitals = () => {
+export default function Hospitals() {
   const [hospitals, setHospitals] = useState([]);
 
-  useEffect(() => {
-    fetchHospitals();
-  }, []);
+  useEffect(() => { fetchHospitals(); }, []);
 
   const fetchHospitals = async () => {
     try {
-      const response = await adminAPI.getAllHospitals();
-      if (response.success) {
-        setHospitals(response.data);
-      }
-    } catch (error) {
-      console.error('Fetch hospitals error:', error);
-    }
+      const res = await adminAPI.getAllHospitals();
+      if (res.success) setHospitals(res.data || []);
+    } catch (err) { console.error(err); }
   };
 
-  const handleToggleStatus = async (hospitalId, currentStatus) => {
+  const toggle = async (id, current) => {
     try {
-      await adminAPI.updateHospitalStatus(hospitalId, !currentStatus);
+      await adminAPI.updateHospitalStatus(id, !current);
       fetchHospitals();
-    } catch (error) {
-      alert('Failed to update hospital status');
-    }
+    } catch (err) { console.error(err); alert('Failed'); }
   };
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom fontWeight="bold">
-        Hospitals
-      </Typography>
-
-      <TableContainer component={Paper} sx={{ mt: 3 }}>
-        <Table>
-          <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Active</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {hospitals.map((h) => (
-              <TableRow key={h.id}>
-                <TableCell>{h.id}</TableCell>
-                <TableCell>{h.name}</TableCell>
-                <TableCell>{h.email}</TableCell>
-                <TableCell>{h.phone}</TableCell>
-                <TableCell>
-                  <Switch
-                    checked={!!h.is_active}
-                    onChange={() => handleToggleStatus(h.id, !!h.is_active)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    onClick={() => alert(JSON.stringify(h, null, 2))}
-                  >
-                    View
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {hospitals.length === 0 && (
+      <Typography variant="h4" gutterBottom>Hospitals</Typography>
+      <Paper sx={{ p: 2 }}>
+        <TableContainer>
+          <Table>
+            <TableHead sx={{ background: '#f6f8fa' }}>
               <TableRow>
-                <TableCell colSpan={6} align="center">
-                  No hospitals found.
-                </TableCell>
+                <TableCell>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Active</TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {hospitals.map(h => (
+                <TableRow key={h.id}>
+                  <TableCell>{h.id}</TableCell>
+                  <TableCell>{h.name}</TableCell>
+                  <TableCell>{h.email}</TableCell>
+                  <TableCell>{h.phone}</TableCell>
+                  <TableCell><Switch checked={!!h.is_active} onChange={() => toggle(h.id, !!h.is_active)} /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
     </Box>
   );
-};
-
-export default Hospitals;
+}

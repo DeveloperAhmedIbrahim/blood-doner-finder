@@ -1,87 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Grid, Box, Typography, Paper } from '@mui/material';
 import { People, Bloodtype, LocalHospital, Assignment, Favorite } from '@mui/icons-material';
 import StatCard from '../components/StatCard';
 import { adminAPI } from '../services/api';
 
-const Dashboard = () => {
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalDonors: 0,
-    totalHospitals: 0,
-    totalRequests: 0,
-    totalDonations: 0,
-  });
+export default function Dashboard() {
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
+  useEffect(() => { fetchStats(); }, []);
 
   const fetchStats = async () => {
     try {
-      const response = await adminAPI.getDashboardStats();
-      if (response.success) {
-        setStats(response.data);
-      }
-    } catch (error) {
-      console.error('Fetch stats error:', error);
-    }
+      setLoading(true);
+      const res = await adminAPI.getDashboardStats();
+      if (res.success) setStats(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally { setLoading(false); }
   };
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom fontWeight="bold">
-        Dashboard Overview
-      </Typography>
+      <Typography variant="h4" gutterBottom>Dashboard</Typography>
 
-      <Grid container spacing={3} mt={2}>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Total Users"
-            value={stats.totalUsers}
-            icon={<People />}
-            color="#457B9D"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Total Donors"
-            value={stats.totalDonors}
-            icon={<Bloodtype />}
-            color="#E63946"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Hospitals"
-            value={stats.totalHospitals}
-            icon={<LocalHospital />}
-            color="#06A77D"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Blood Requests"
-            value={stats.totalRequests}
-            icon={<Assignment />}
-            color="#F77F00"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Donations"
-            value={stats.totalDonations}
-            icon={<Favorite />}
-            color="#DC3545"
-          />
-        </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6} md={3}><StatCard title="Total Users" value={stats.totalUsers} icon={<People />} color="#1976D2" /></Grid>
+        <Grid item xs={12} sm={6} md={3}><StatCard title="Total Donors" value={stats.totalDonors} icon={<Bloodtype />} color="#d32f2f" /></Grid>
+        <Grid item xs={12} sm={6} md={3}><StatCard title="Hospitals" value={stats.totalHospitals} icon={<LocalHospital />} color="#2e7d32" /></Grid>
+        <Grid item xs={12} sm={6} md={3}><StatCard title="Requests" value={stats.totalRequests} icon={<Assignment />} color="#ed6c02" /></Grid>
+        <Grid item xs={12} sm={6} md={3}><StatCard title="Donations" value={stats.totalDonations} icon={<Favorite />} color="#9c27b0" /></Grid>
       </Grid>
+
+      <Paper sx={{ mt: 3, p: 3 }}>
+        <Typography variant="h6">Quick Overview</Typography>
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Use the left menu to manage users, donors, hospitals, requests and donations. Charts and more analytics can be added here.
+        </Typography>
+      </Paper>
     </Box>
   );
-};
-
-export default Dashboard;
+}
