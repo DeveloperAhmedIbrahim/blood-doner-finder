@@ -11,6 +11,7 @@ const requestRoutes = require('./routes/requestRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const donationRoutes = require('./routes/donationRoutes');        // NEW
 const notificationRoutes = require('./routes/notificationRoutes'); // NEW
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,8 +30,9 @@ app.use('/api/donor', donorRoutes);
 app.use('/api/hospital', hospitalRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/donations', donationRoutes);        // NEW
-app.use('/api/notifications', notificationRoutes); // NEW
+app.use('/api/donations', donationRoutes);        
+app.use('/api/notifications', notificationRoutes); 
+app.use('/api/admin', adminRoutes);
 
 // Test route
 app.get('/', (req, res) => {
