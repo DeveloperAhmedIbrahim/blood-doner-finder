@@ -34,6 +34,6 @@ export const COLORS = {
   GRAY: '#6C757D',
 };
 
-export const BASE_URL = 'http://10.0.2.2:5000';
-// export const BASE_URL = 'https://blood-doner-finder.techrevivals.net';
+// export const BASE_URL = 'http://10.0.2.2:5000';
+export const BASE_URL = 'https://blood-doner-finder.techrevivals.net';
 export const API_URL = `${BASE_URL}/api`;
