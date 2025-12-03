@@ -45,7 +45,7 @@ exports.getStats = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT id, name, email, phone, role, is_verified, blood_group, cnic, created_at FROM users ORDER BY id DESC');
+    const [rows] = await db.query('SELECT id, name, email, phone, role, is_verified, is_active, blood_group, cnic, created_at FROM users WHERE role != "admin" ORDER BY id DESC');
     return sendSuccess(res, rows);
   } catch (error) {
     console.error('getAllUsers error:', error);

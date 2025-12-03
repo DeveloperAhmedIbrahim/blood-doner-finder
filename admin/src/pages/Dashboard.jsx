@@ -31,13 +31,6 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}><StatCard title="Requests" value={stats.totalRequests} icon={<Assignment />} color="#ed6c02" /></Grid>
         <Grid item xs={12} sm={6} md={3}><StatCard title="Donations" value={stats.totalDonations} icon={<Favorite />} color="#9c27b0" /></Grid>
       </Grid>
-
-      <Paper sx={{ mt: 3, p: 3 }}>
-        <Typography variant="h6">Quick Overview</Typography>
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          Use the left menu to manage users, donors, hospitals, requests and donations. Charts and more analytics can be added here.
-        </Typography>
-      </Paper>
     </Box>
   );
 }
