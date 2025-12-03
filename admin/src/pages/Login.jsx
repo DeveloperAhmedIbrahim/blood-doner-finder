@@ -49,9 +49,13 @@ const Login = () => {
         }}
       >
         <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography variant="h4" align="center" gutterBottom color="#E63946">
-            🩸 Admin Login
+          <Typography variant="h5" align="center" gutterBottom color="#E63946">
+            <img src="/icon.png" alt="Logo" width={100} />
+            <br />
+            One Drop - Admin
+            <br />
           </Typography>
+          <p style={{textAlign: "center", fontSize:12}}>Please login to access dashabord.</p>
 
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
