@@ -19,7 +19,7 @@ export default function Topbar() {
     <AppBar position="fixed" color="inherit" elevation={1} sx={{ ml: '240px', width: `calc(100% - 240px)` }}>
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1, color: '#1f2937' }}>
-          Blood Donor Finder — Admin
+          One Drop — Admin
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>

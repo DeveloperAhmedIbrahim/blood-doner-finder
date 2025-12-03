@@ -33,10 +33,7 @@ export default function Sidebar() {
     >
       <Box sx={{ p: 3, textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: '#f1f5f9' }}>
-          🩸 Blood Admin
-        </Typography>
-        <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.7)' }}>
-          Shipwise — Dashboard
+          Administrator
         </Typography>
       </Box>
 
