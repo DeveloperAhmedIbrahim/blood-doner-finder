@@ -23,18 +23,18 @@ export default function Topbar() {
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          <IconButton aria-label="notifications">
+          {/* <IconButton aria-label="notifications">
             <Badge badgeContent={3} color="error">
               <NotificationsIcon />
             </Badge>
-          </IconButton>
+          </IconButton> */}
 
           <IconButton onClick={handleOpen} size="small" sx={{ ml: 2 }}>
             <Avatar sx={{ width: 36, height: 36 }}>SA</Avatar>
           </IconButton>
 
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-            <MenuItem onClick={() => { handleClose(); navigate('/profile'); }}>Profile</MenuItem>
+            {/* <MenuItem onClick={() => { handleClose(); navigate('/profile'); }}>Profile</MenuItem> */}
             <MenuItem onClick={() => { handleClose(); handleLogout(); }}>
               Logout <LogoutIcon sx={{ ml: 1 }} />
             </MenuItem>
