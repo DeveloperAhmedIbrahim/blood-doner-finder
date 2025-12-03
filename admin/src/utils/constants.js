@@ -1,5 +1,5 @@
-export const API_URL = 'http://localhost:5000/api';
-// export const API_URL = 'https://your-domain.com/api';
+// export const API_URL = 'http://localhost:5000/api';
+export const API_URL = 'https://blood-doner-finder.techrevivals.net/api';
 
 export const COLORS = {
   PRIMARY: '#E63946',
